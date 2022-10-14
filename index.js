@@ -1,23 +1,21 @@
 const { readFileSync, existsSync, writeFileSync } = require('fs')
-const { argv } = require('process')
 
-if (existsSync(argv[2])) {
-  if (argv.length - 2 === 2 || argv.length - 2 === 3) {
-    const stringResult = readFileSync(argv[2], 'utf-8').split('\n').map((line, index) => `${index + 1}: ${line}`).join('\n')
-    if (existsSync(argv[3])) {
-      if (argv.length - 2 === 2 || argv[4] === '-n') {
-        console.log('Cannot overwrite existing output file.')
-      } else if (argv[4] === '-y') {
-        writeFileSync(argv[3], stringResult)
-      } else {
-        console.log('Invalid overwrite option')
-      }
-    } else {
-      writeFileSync(argv[3], stringResult)
-    }
-  } else {
-    console.log('Missing output file argument.')
-  }
-} else {
+const [inputFile, outputFile, overwriteFlag] = process.argv.slice(2)
+
+if (!existsSync(inputFile)) {
   console.log('Input file does not exist.')
+  process.exit(1)
+} else if (outputFile === undefined) {
+  console.log('Missing output file argument.')
+  process.exit(1)
+} else if (existsSync(outputFile) && (overwriteFlag === '-n' || overwriteFlag === undefined)) {
+  console.log('Cannot overwrite existing output file.')
+  process.exit(1)
+} else if (!(['-n', '-y', undefined].includes(overwriteFlag))) {
+  console.log('Invalid overwrite option.')
+  process.exit(1)
+} else if (!existsSync(outputFile) || overwriteFlag === '-y') {
+  const stringResult = readFileSync(inputFile, 'utf-8').split('\n').map((line, index) => `${index + 1}: ${line}`).join('\n')
+  writeFileSync(outputFile, stringResult)
+  process.exit(1)
 }
