@@ -3,8 +3,18 @@ const { readFileSync, existsSync, writeFileSync } = require('fs')
 const [inputFile, outputFile, overwriteFlag] = process.argv.slice(2)
 
 if (!existsSync(inputFile)) {
-  console.log('Input file does not exist.')
-  process.exit(1)
+  process.stdin.on('readable', () => {
+    let endFlag = false
+    let finalString = ''
+    while (!endFlag) {
+      finalString += process.stdin.read().toString()
+      if (process.stdin.read() === null) {
+        endFlag = true
+      }
+    }
+    console.log(finalString.split('\n').map((line, index) => `${index + 1}: ${line}`).join('\n').slice(0, -1))
+    process.exit(0)
+  })
 } else if (outputFile === undefined) {
   console.log('Missing output file argument.')
   process.exit(1)
